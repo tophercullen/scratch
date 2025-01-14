@@ -1,4 +1,4 @@
-name: test_qoomon
+name: test_planet
 
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
     - name: make change
       timeout-minutes: 30
       run: |
-        pr_branch=testcommit_qoomon_`date +%Y%m%d%H%M%S`
+        pr_branch=testcommit_planet_`date +%Y%m%d%H%M%S`
         echo "pr_branch=$pr_branch" >> $GITHUB_ENV
         git checkout -b $pr_branch
         echo "test2" > test2.txt
@@ -52,14 +52,13 @@ jobs:
         branch: ${{ env.pr_branch }}
         sha: ${{ env.pr_sha }}
 
-    - name: Commit changes
-      if: env.pr_changes
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      uses: qoomon/actions--create-commit@v1
+    - uses: planetscale/ghcommit-action@v0.1.6
       with:
-        message: automated checkin
-        skip-empty: true
+        commit_message: "automated checkin planet"
+        repo: ${{ github.repository }}
+        branch: ${{ env.pr_branch }}
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
     - if: env.pr_changes
       run: git push --set-upstream origin ${{ env.pr_branch }}
