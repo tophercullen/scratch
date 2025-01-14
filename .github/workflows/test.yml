@@ -1,0 +1,65 @@
+name: test
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: write
+  actions: write
+  checks: write
+  pull-requests: write	
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: make change
+      timeout-minutes: 30
+      run: |
+        pr_branch=testcommit_`date +%Y%m%d%H%M%S`
+        echo "pr_branch=$pr_branch" >> $GITHUB_ENV
+        git checkout -b $pr_branch
+        echo "blahblah" > test.file
+        ln -s test.file asym.file
+
+    - name: Check for changes
+      id: git_diff
+      run: |
+        if [ -z "$(git status --porcelain | grep -v logs/)" ]; then 
+          echo "Nothing to commit"
+        else 
+          git add -- . ':!logs/'
+          echo "pr_changes=yes" >> $GITHUB_ENV
+          echo "pr_sha=`git rev-parse HEAD`" >> $GITHUB_ENV
+        fi
+
+    - name: Create remote branch
+      uses: peterjgrainger/action-create-branch@v2.2.0
+      if: env.pr_changes
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        branch: ${{ env.pr_branch }}
+        sha: ${{ env.pr_sha }}
+
+    - name: Commit changes
+      if: env.pr_changes
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: qoomon/actions--create-commit@v1
+      with:
+        message: automated checkin
+        skip-empty: true
+
+    - if: env.pr_changes
+      run: git push --set-upstream origin ${{ env.pr_branch }}
