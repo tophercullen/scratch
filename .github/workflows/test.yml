@@ -30,7 +30,7 @@ jobs:
         echo "pr_branch=$pr_branch" >> $GITHUB_ENV
         git checkout -b $pr_branch
         echo "test2" > test2.txt
-        ln -s test2.txt ./symlinks/thelink.txt
+        ln -sf test2.txt ./symlinks/thelink.txt
 
     - name: Check for changes
       id: git_diff
