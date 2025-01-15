@@ -43,15 +43,6 @@ jobs:
           echo "pr_sha=`git rev-parse HEAD`" >> $GITHUB_ENV
         fi
 
-    - name: Create remote branch
-      uses: peterjgrainger/action-create-branch@v2.2.0
-      if: env.pr_changes
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        branch: ${{ env.pr_branch }}
-        sha: ${{ env.pr_sha }}
-
     - uses: planetscale/ghcommit-action@v0.1.6
       with:
         commit_message: "automated checkin planet"
@@ -59,6 +50,3 @@ jobs:
         branch: ${{ env.pr_branch }}
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-
-    - if: env.pr_changes
-      run: git push --set-upstream origin ${{ env.pr_branch }}
