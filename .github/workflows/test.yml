@@ -31,6 +31,7 @@ jobs:
         git checkout -b $pr_branch
         echo "blahblahlbahblah" > test2.txt
         ln -sf ../test2.txt ./symlinks/thelink.txt
+        chmod +x script.sh
 
     - name: Check for changes
       id: git_diff
